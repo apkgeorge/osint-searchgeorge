@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT Search - Buscador con Google Dorks</title>
+    <title>OSINT Search - Búsqueda Insensible a Mayúsculas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -188,6 +188,15 @@
             min-height: 60px;
         }
 
+        .processing-info {
+            background: #e6f7ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
         .results-container {
             flex: 1;
             overflow-y: auto;
@@ -242,6 +251,13 @@
             font-family: monospace;
         }
 
+        .result-item .original-term {
+            font-style: italic;
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+
         .empty-results {
             text-align: center;
             padding: 40px;
@@ -288,6 +304,14 @@
             margin-bottom: 10px;
         }
 
+        .instructions .case-insensitive {
+            background: #e6f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1890ff;
+            margin-top: 15px;
+        }
+
         footer {
             text-align: center;
             color: white;
@@ -310,7 +334,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-search"></i> OSINT Search</h1>
-            <p>Herramienta avanzada de búsqueda con Google Dorks para encontrar información en fuentes abiertas</p>
+            <p>Búsqueda insensible a mayúsculas/minúsculas - Encuentra información sin importar cómo esté escrita</p>
         </header>
 
         <div class="app-container">
@@ -320,6 +344,11 @@
                 <div class="search-box">
                     <input type="text" id="searchQuery" placeholder="Ingresa tu término de búsqueda...">
                     <button id="searchButton"><i class="fas fa-search"></i> Buscar</button>
+                </div>
+                
+                <div class="processing-info" id="processingInfo">
+                    <i class="fas fa-info-circle"></i> 
+                    <span>Tu búsqueda se procesará sin distinguir mayúsculas/minúsculas</span>
                 </div>
                 
                 <h3>Selecciona tipo de búsqueda:</h3>
@@ -362,8 +391,8 @@
                             <label for="optionFiletype">Incluir tipos de archivo</label>
                         </div>
                         <div class="option-item">
-                            <input type="checkbox" id="optionSite">
-                            <label for="optionSite">Buscar en sitio específico</label>
+                            <input type="checkbox" id="optionCaseInsensitive" checked>
+                            <label for="optionCaseInsensitive">Ignorar mayúsculas/minúsculas</label>
                         </div>
                         <div class="option-item">
                             <input type="checkbox" id="optionDate">
@@ -401,6 +430,17 @@
                 <li><strong>Haz clic en cualquier resultado</strong> para abrir la búsqueda de Google en una nueva pestaña</li>
             </ol>
             
+            <div class="case-insensitive">
+                <h3><i class="fas fa-font"></i> Búsqueda insensible a mayúsculas/minúsculas</h3>
+                <p>Esta herramienta convierte automáticamente todos los términos de búsqueda a minúsculas para encontrar resultados sin importar cómo estén escritos. Por ejemplo:</p>
+                <ul>
+                    <li>"JURGUEN GA" se convertirá a "jurguen ga"</li>
+                    <li>"Jurguen Ga" se convertirá a "jurguen ga"</li>
+                    <li>"jurguen ga" permanecerá igual</li>
+                </ul>
+                <p>Todos estos términos producirán los mismos resultados.</p>
+            </div>
+            
             <div class="note">
                 <h3><i class="fas fa-exclamation-triangle"></i> Importante</h3>
                 <p>Esta herramienta está diseñada únicamente para búsquedas éticas y legales. Nunca utilices esta herramienta para acceder a información sin autorización o violar la privacidad de otros. El mal uso de esta herramienta puede tener consecuencias legales.</p>
@@ -408,7 +448,7 @@
         </div>
         
         <footer>
-            <p>OSINT Search - Herramienta de búsqueda con Google Dorks | &copy; 2023</p>
+            <p>OSINT Search - Búsqueda Insensible a Mayúsculas/Minúsculas | &copy; 2023</p>
         </footer>
     </div>
 
@@ -420,6 +460,7 @@
             const searchButton = document.getElementById('searchButton');
             const dorkPreview = document.getElementById('dorkPreview');
             const resultsContainer = document.getElementById('resultsContainer');
+            const processingInfo = document.getElementById('processingInfo');
             
             // Dorks por categoría
             const dorks = {
@@ -461,21 +502,48 @@
                 }
                 
                 dorkPreview.textContent = preview;
+                
+                // Mostrar información de procesamiento
+                if (query && document.getElementById('optionCaseInsensitive').checked) {
+                    processingInfo.style.display = 'flex';
+                    processingInfo.querySelector('span').textContent = 
+                        `Tu búsqueda se convertirá a: "${query.toLowerCase()}"`;
+                } else {
+                    processingInfo.style.display = 'none';
+                }
             }
             
             // Actualizar vista previa al escribir
             searchInput.addEventListener('input', updateDorkPreview);
             
+            // Actualizar cuando cambia la opción de mayúsculas/minúsculas
+            document.getElementById('optionCaseInsensitive').addEventListener('change', updateDorkPreview);
+            
             // Realizar búsqueda
             searchButton.addEventListener('click', performSearch);
             
+            // Permitir buscar con Enter
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
             // Función para realizar la búsqueda
             function performSearch() {
-                const query = searchInput.value.trim();
+                let query = searchInput.value.trim();
                 
                 if (!query && selectedType !== 'credentials' && selectedType !== 'social') {
                     alert('Por favor ingresa un término de búsqueda');
                     return;
+                }
+                
+                // Convertir a minúsculas si la opción está activada
+                const caseInsensitive = document.getElementById('optionCaseInsensitive').checked;
+                const originalQuery = query;
+                
+                if (caseInsensitive && query) {
+                    query = query.toLowerCase();
                 }
                 
                 // Mostrar mensaje de carga
@@ -483,19 +551,19 @@
                     <div class="empty-results">
                         <i class="fas fa-spinner fa-spin"></i>
                         <h3>Buscando información...</h3>
-                        <p>Esto puede tomar unos segundos</p>
+                        <p>Procesando: "${originalQuery}"${caseInsensitive ? ` (convertido a: "${query}")` : ''}</p>
                     </div>
                 `;
                 
                 // Simular retraso de búsqueda
                 setTimeout(() => {
                     // Generar resultados simulados
-                    generateSimulatedResults(query);
+                    generateSimulatedResults(query, originalQuery);
                 }, 1000);
             }
             
             // Generar resultados de búsqueda simulados con enlaces funcionales
-            function generateSimulatedResults(query) {
+            function generateSimulatedResults(query, originalQuery) {
                 const types = {
                     emails: ['Correos electrónicos', 'Lista de emails', 'Direcciones de correo'],
                     documents: ['Reporte confidencial', 'Documento interno', 'Presentación estratégica'],
@@ -537,7 +605,8 @@
                         title: `${resultType} ${resultNumber} - ${query || selectedType}`,
                         url: `https://www.google.com/search?q=${encodedDork}`,
                         description: descriptions[selectedType],
-                        dork: dork
+                        dork: dork,
+                        originalTerm: originalQuery || query
                     });
                 }
                 
@@ -566,6 +635,7 @@
                             <h4>${result.title}</h4>
                             <p>${result.description}</p>
                             <div class="dork-info">Dork: ${result.dork}</div>
+                            <div class="original-term">Término original: ${result.originalTerm}</div>
                         </div>
                     `;
                 });
@@ -575,7 +645,7 @@
             
             // Generar algunos resultados iniciales de demostración
             setTimeout(() => {
-                generateSimulatedResults('ejemplo');
+                generateSimulatedResults('ejemplo', 'EjEmPLo');
             }, 500);
         });
     </script>
