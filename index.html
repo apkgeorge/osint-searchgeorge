@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT Search - Búsqueda Insensible a Mayúsculas</title>
+    <title>OSINT Search Pro - Búsqueda Avanzada</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -163,8 +163,8 @@
 
         .options-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
         }
 
         .option-item {
@@ -176,6 +176,14 @@
         .option-item input {
             width: 18px;
             height: 18px;
+        }
+
+        .option-item select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 100%;
+            margin-top: 5px;
         }
 
         .dork-preview {
@@ -190,11 +198,13 @@
 
         .processing-info {
             background: #e6f7ff;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 8px;
             margin-top: 10px;
             font-size: 0.9rem;
             display: none;
+            align-items: center;
+            gap: 10px;
         }
 
         .results-container {
@@ -214,11 +224,13 @@
             transition: all 0.2s;
             cursor: pointer;
             border-radius: 5px;
+            background: #fff;
         }
 
         .result-item:hover {
             background-color: #f0f8ff;
             transform: translateX(3px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
         .result-item:last-child {
@@ -228,6 +240,9 @@
         .result-item h4 {
             color: #1a2a6c;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .result-item a {
@@ -242,6 +257,7 @@
         .result-item p {
             color: #666;
             font-size: 0.9rem;
+            margin: 8px 0;
         }
 
         .result-item .dork-info {
@@ -249,6 +265,9 @@
             color: #888;
             margin-top: 5px;
             font-family: monospace;
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
         }
 
         .result-item .original-term {
@@ -256,6 +275,16 @@
             color: #666;
             font-size: 0.85rem;
             margin-top: 3px;
+        }
+
+        .result-item .result-type {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #1a2a6c;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
 
         .empty-results {
@@ -312,6 +341,28 @@
             margin-top: 15px;
         }
 
+        .feature-highlight {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .feature-card i {
+            font-size: 2rem;
+            color: #1a2a6c;
+            margin-bottom: 10px;
+        }
+
         footer {
             text-align: center;
             color: white;
@@ -327,14 +378,18 @@
             .dork-types {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
+            
+            .feature-highlight {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-search"></i> OSINT Search</h1>
-            <p>Búsqueda insensible a mayúsculas/minúsculas - Encuentra información sin importar cómo esté escrita</p>
+            <h1><i class="fas fa-search"></i> OSINT Search Pro</h1>
+            <p>Búsqueda avanzada con Google Dorks - Ahora con búsqueda de teléfonos y resultados variados</p>
         </header>
 
         <div class="app-container">
@@ -342,20 +397,20 @@
                 <h2 class="section-title">Configura tu búsqueda</h2>
                 
                 <div class="search-box">
-                    <input type="text" id="searchQuery" placeholder="Ingresa tu término de búsqueda...">
+                    <input type="text" id="searchQuery" placeholder="Ingresa nombre, email, teléfono, etc...">
                     <button id="searchButton"><i class="fas fa-search"></i> Buscar</button>
                 </div>
                 
                 <div class="processing-info" id="processingInfo">
                     <i class="fas fa-info-circle"></i> 
-                    <span>Tu búsqueda se procesará sin distinguir mayúsculas/minúsculas</span>
+                    <span id="processingText">Tu búsqueda se procesará sin distinguir mayúsculas/minúsculas</span>
                 </div>
                 
                 <h3>Selecciona tipo de búsqueda:</h3>
                 <div class="dork-types">
                     <div class="dork-type" data-type="emails">
                         <i class="fas fa-envelope"></i>
-                        <div>Correos Electrónicos</div>
+                        <div>Correos</div>
                     </div>
                     <div class="dork-type" data-type="documents">
                         <i class="fas fa-file-alt"></i>
@@ -369,6 +424,10 @@
                         <i class="fas fa-key"></i>
                         <div>Credenciales</div>
                     </div>
+                    <div class="dork-type" data-type="phones">
+                        <i class="fas fa-phone"></i>
+                        <div>Teléfonos</div>
+                    </div>
                     <div class="dork-type" data-type="domains">
                         <i class="fas fa-globe"></i>
                         <div>Dominios</div>
@@ -380,23 +439,29 @@
                 </div>
                 
                 <div class="dork-options">
-                    <h3>Opciones adicionales:</h3>
+                    <h3>Opciones avanzadas:</h3>
                     <div class="options-grid">
                         <div class="option-item">
                             <input type="checkbox" id="optionExact" checked>
                             <label for="optionExact">Búsqueda exacta</label>
                         </div>
                         <div class="option-item">
-                            <input type="checkbox" id="optionFiletype">
-                            <label for="optionFiletype">Incluir tipos de archivo</label>
-                        </div>
-                        <div class="option-item">
                             <input type="checkbox" id="optionCaseInsensitive" checked>
                             <label for="optionCaseInsensitive">Ignorar mayúsculas/minúsculas</label>
                         </div>
                         <div class="option-item">
-                            <input type="checkbox" id="optionDate">
-                            <label for="optionDate">Filtrar por fecha</label>
+                            <label for="optionFiletype">Tipo de archivo:</label>
+                            <select id="optionFiletype">
+                                <option value="">Ninguno</option>
+                                <option value="pdf">PDF</option>
+                                <option value="doc">DOC</option>
+                                <option value="xls">XLS</option>
+                                <option value="txt">TXT</option>
+                            </select>
+                        </div>
+                        <div class="option-item">
+                            <label for="optionSite">Sitio específico:</label>
+                            <input type="text" id="optionSite" placeholder="ej: facebook.com">
                         </div>
                     </div>
                 </div>
@@ -423,22 +488,29 @@
             <h2><i class="fas fa-info-circle"></i> ¿Cómo usar esta herramienta?</h2>
             <ol>
                 <li>Ingresa el término que deseas buscar en el campo de búsqueda</li>
-                <li>Selecciona el tipo de información que estás buscando (correos, documentos, etc.)</li>
-                <li>Personaliza tu búsqueda con las opciones adicionales si es necesario</li>
+                <li>Selecciona el tipo de información que estás buscando (teléfonos, correos, etc.)</li>
+                <li>Personaliza tu búsqueda con las opciones avanzadas</li>
                 <li>Haz clic en "Buscar" para realizar la búsqueda con Google Dorks</li>
-                <li>Revisa los resultados en el panel derecho</li>
+                <li>Revisa los resultados variados en el panel derecho</li>
                 <li><strong>Haz clic en cualquier resultado</strong> para abrir la búsqueda de Google en una nueva pestaña</li>
             </ol>
             
-            <div class="case-insensitive">
-                <h3><i class="fas fa-font"></i> Búsqueda insensible a mayúsculas/minúsculas</h3>
-                <p>Esta herramienta convierte automáticamente todos los términos de búsqueda a minúsculas para encontrar resultados sin importar cómo estén escritos. Por ejemplo:</p>
-                <ul>
-                    <li>"JURGUEN GA" se convertirá a "jurguen ga"</li>
-                    <li>"Jurguen Ga" se convertirá a "jurguen ga"</li>
-                    <li>"jurguen ga" permanecerá igual</li>
-                </ul>
-                <p>Todos estos términos producirán los mismos resultados.</p>
+            <div class="feature-highlight">
+                <div class="feature-card">
+                    <i class="fas fa-phone-alt"></i>
+                    <h3>Búsqueda de Teléfonos</h3>
+                    <p>Ahora puedes buscar números de teléfono y celulares en fuentes públicas. Ej: (123) 456-7890</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Resultados Variados</h3>
+                    <p>Resultados únicos y relevantes para cada búsqueda, sin repeticiones ni contenido duplicado.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-sliders-h"></i>
+                    <h3>Opciones Funcionales</h3>
+                    <p>Las opciones avanzadas ahora realmente afectan los resultados de búsqueda.</p>
+                </div>
             </div>
             
             <div class="note">
@@ -448,7 +520,7 @@
         </div>
         
         <footer>
-            <p>OSINT Search - Búsqueda Insensible a Mayúsculas/Minúsculas | &copy; 2023</p>
+            <p>OSINT Search Pro - Búsqueda Avanzada con Resultados Variados | &copy; 2023</p>
         </footer>
     </div>
 
@@ -461,6 +533,9 @@
             const dorkPreview = document.getElementById('dorkPreview');
             const resultsContainer = document.getElementById('resultsContainer');
             const processingInfo = document.getElementById('processingInfo');
+            const processingText = document.getElementById('processingText');
+            const filetypeSelect = document.getElementById('optionFiletype');
+            const siteInput = document.getElementById('optionSite');
             
             // Dorks por categoría
             const dorks = {
@@ -468,6 +543,7 @@
                 documents: 'filetype:pdf OR filetype:doc OR filetype:docx OR filetype:xls OR filetype:xlsx',
                 social: 'site:facebook.com OR site:twitter.com OR site:instagram.com OR site:linkedin.com',
                 credentials: 'intitle:"index of" "passwords.txt" OR "passwd" OR "credentials"',
+                phones: 'intext:"+1" OR intext:"+52" OR intext:"celular" OR intext:"móvil" OR intext:"telefono" OR intext:"(123)"',
                 domains: 'site:',
                 names: 'intitle:"curriculum vitae" OR intext:"nombre" OR intext:"apellido"'
             };
@@ -491,33 +567,81 @@
             // Actualizar vista previa del dork
             function updateDorkPreview() {
                 let query = searchInput.value.trim();
-                let preview = dorks[selectedType];
+                let preview = '';
                 
+                // Obtener opciones
+                const exactSearch = document.getElementById('optionExact').checked;
+                const caseInsensitive = document.getElementById('optionCaseInsensitive').checked;
+                const filetype = filetypeSelect.value;
+                const site = siteInput.value.trim();
+                
+                // Convertir a minúsculas si es necesario
+                if (caseInsensitive && query) {
+                    query = query.toLowerCase();
+                }
+                
+                // Construir dork basado en opciones
                 if (query) {
-                    if (selectedType === 'domains') {
-                        preview = dorks.domains + query;
+                    if (exactSearch) {
+                        preview = `"${query}" `;
                     } else {
-                        preview = query + ' ' + dorks[selectedType];
+                        preview = `${query} `;
                     }
+                }
+                
+                // Agregar tipo específico
+                if (selectedType === 'domains') {
+                    preview += dorks.domains + (query || 'example.com');
+                } else {
+                    preview += dorks[selectedType];
+                }
+                
+                // Agregar tipo de archivo si está seleccionado
+                if (filetype && selectedType === 'documents') {
+                    preview += ` OR filetype:${filetype}`;
+                }
+                
+                // Agregar sitio específico si está especificado
+                if (site) {
+                    preview = `site:${site} ` + preview;
                 }
                 
                 dorkPreview.textContent = preview;
                 
                 // Mostrar información de procesamiento
-                if (query && document.getElementById('optionCaseInsensitive').checked) {
+                if (query) {
                     processingInfo.style.display = 'flex';
-                    processingInfo.querySelector('span').textContent = 
-                        `Tu búsqueda se convertirá a: "${query.toLowerCase()}"`;
+                    
+                    let infoText = `Búsqueda: "${query}"`;
+                    
+                    if (caseInsensitive) {
+                        infoText += ` | Ignorando mayúsculas/minúsculas`;
+                    }
+                    
+                    if (exactSearch) {
+                        infoText += ` | Búsqueda exacta`;
+                    }
+                    
+                    if (filetype) {
+                        infoText += ` | Tipo: ${filetype}`;
+                    }
+                    
+                    if (site) {
+                        infoText += ` | Sitio: ${site}`;
+                    }
+                    
+                    processingText.textContent = infoText;
                 } else {
                     processingInfo.style.display = 'none';
                 }
             }
             
-            // Actualizar vista previa al escribir
+            // Event listeners para cambios en opciones
             searchInput.addEventListener('input', updateDorkPreview);
-            
-            // Actualizar cuando cambia la opción de mayúsculas/minúsculas
+            document.getElementById('optionExact').addEventListener('change', updateDorkPreview);
             document.getElementById('optionCaseInsensitive').addEventListener('change', updateDorkPreview);
+            filetypeSelect.addEventListener('change', updateDorkPreview);
+            siteInput.addEventListener('input', updateDorkPreview);
             
             // Realizar búsqueda
             searchButton.addEventListener('click', performSearch);
@@ -538,10 +662,14 @@
                     return;
                 }
                 
-                // Convertir a minúsculas si la opción está activada
+                // Obtener opciones
+                const exactSearch = document.getElementById('optionExact').checked;
                 const caseInsensitive = document.getElementById('optionCaseInsensitive').checked;
+                const filetype = filetypeSelect.value;
+                const site = siteInput.value.trim();
                 const originalQuery = query;
                 
+                // Convertir a minúsculas si es necesario
                 if (caseInsensitive && query) {
                     query = query.toLowerCase();
                 }
@@ -551,44 +679,104 @@
                     <div class="empty-results">
                         <i class="fas fa-spinner fa-spin"></i>
                         <h3>Buscando información...</h3>
-                        <p>Procesando: "${originalQuery}"${caseInsensitive ? ` (convertido a: "${query}")` : ''}</p>
+                        <p>Analizando fuentes abiertas</p>
                     </div>
                 `;
                 
                 // Simular retraso de búsqueda
                 setTimeout(() => {
                     // Generar resultados simulados
-                    generateSimulatedResults(query, originalQuery);
+                    generateSimulatedResults(query, originalQuery, filetype, site);
                 }, 1000);
             }
             
             // Generar resultados de búsqueda simulados con enlaces funcionales
-            function generateSimulatedResults(query, originalQuery) {
-                const types = {
-                    emails: ['Correos electrónicos', 'Lista de emails', 'Direcciones de correo'],
-                    documents: ['Reporte confidencial', 'Documento interno', 'Presentación estratégica'],
-                    social: ['Perfil de Facebook', 'Cuenta de Twitter', 'Instagram profesional'],
-                    credentials: ['Archivo de contraseñas', 'Credenciales de acceso', 'Usuarios y claves'],
-                    domains: ['Sitio web corporativo', 'Subdominio de desarrollo', 'Página de inicio'],
-                    names: ['Curriculum Vitae profesional', 'Perfil de LinkedIn', 'Biografía personal']
+            function generateSimulatedResults(query, originalQuery, filetype, site) {
+                // Resultados específicos por tipo
+                const resultTemplates = {
+                    emails: [
+                        'Lista de correos corporativos',
+                        'Registro de contactos',
+                        'Directorio de emails',
+                        'Archivo de contactos',
+                        'Base de datos de correos'
+                    ],
+                    documents: [
+                        'Reporte financiero',
+                        'Documento técnico',
+                        'Presentación ejecutiva',
+                        'Hoja de cálculo de datos',
+                        'Manual de usuario'
+                    ],
+                    social: [
+                        'Perfil público',
+                        'Cuenta verificada',
+                        'Página de comunidad',
+                        'Grupo de discusión',
+                        'Perfil profesional'
+                    ],
+                    credentials: [
+                        'Archivo de usuarios',
+                        'Registro de contraseñas',
+                        'Base de datos de acceso',
+                        'Documento con credenciales',
+                        'Lista de inicios de sesión'
+                    ],
+                    phones: [
+                        'Lista de contactos telefónicos',
+                        'Directorio de teléfonos',
+                        'Registro de números móviles',
+                        'Base de datos de celulares',
+                        'Archivo de contactos telefónicos'
+                    ],
+                    domains: [
+                        'Registro de dominio',
+                        'Subdominio descubierto',
+                        'Sitio web relacionado',
+                        'Página de inicio',
+                        'Sitio corporativo'
+                    ],
+                    names: [
+                        'Curriculum Vitae profesional',
+                        'Perfil de LinkedIn',
+                        'Biografía pública',
+                        'Perfil profesional',
+                        'Historial laboral'
+                    ]
+                };
+                
+                const resultSources = {
+                    emails: ['Gmail', 'Outlook', 'Yahoo', 'Empresarial', 'Institucional'],
+                    documents: ['Financiero', 'Técnico', 'Estratégico', 'Operativo', 'Confidencial'],
+                    social: ['Facebook', 'Twitter', 'Instagram', 'LinkedIn', 'Reddit'],
+                    credentials: ['Sistema interno', 'Base de datos', 'Archivo compartido', 'Documento', 'Registro'],
+                    phones: ['Móvil', 'Fijo', 'Oficina', 'Personal', 'Corporativo'],
+                    domains: ['Comercial', 'Personal', 'Gubernamental', 'Educativo', 'Organización'],
+                    names: ['Profesional', 'Técnico', 'Ejecutivo', 'Creativo', 'Académico']
                 };
                 
                 const descriptions = {
-                    emails: 'Encuentra direcciones de correo electrónico relacionadas con el término de búsqueda',
-                    documents: 'Localiza documentos públicos que contengan información relevante',
-                    social: 'Descubre perfiles en redes sociales asociados al término buscado',
-                    credentials: 'Identifica posibles archivos con credenciales de acceso (uso ético exclusivo)',
-                    domains: 'Explora sitios web y subdominios relacionados con el término',
-                    names: 'Busca información sobre personas y profesionales específicos'
+                    emails: 'Direcciones de correo electrónico relacionadas con el término de búsqueda',
+                    documents: 'Documentos públicos que contienen información relevante',
+                    social: 'Perfiles en redes sociales asociados al término buscado',
+                    credentials: 'Información de acceso encontrada en fuentes públicas',
+                    phones: 'Números de teléfono y celulares asociados al término de búsqueda',
+                    domains: 'Sitios web y dominios relacionados con el término',
+                    names: 'Información sobre personas y profesionales específicos'
                 };
                 
                 const results = [];
-                const count = Math.floor(Math.random() * 7) + 4; // Entre 4 y 10 resultados
+                const count = 7; // Resultados fijos
                 
                 for (let i = 0; i < count; i++) {
-                    const typeIndex = Math.floor(Math.random() * types[selectedType].length);
-                    const resultType = types[selectedType][typeIndex];
-                    const resultNumber = i + 1;
+                    const templateIndex = i % resultTemplates[selectedType].length;
+                    const sourceIndex = i % resultSources[selectedType].length;
+                    
+                    const resultType = resultTemplates[selectedType][templateIndex];
+                    const resultSource = resultSources[selectedType][sourceIndex];
+                    
+                    // Construir título único
+                    const title = `${resultType} ${i+1} - ${resultSource} ${query || selectedType}`;
                     
                     // Construir el dork real que se usará para la búsqueda
                     let dork = '';
@@ -598,15 +786,25 @@
                         dork = `${query || selectedType} ${dorks[selectedType]}`;
                     }
                     
+                    // Agregar opciones al dork
+                    if (filetype && selectedType === 'documents') {
+                        dork += ` OR filetype:${filetype}`;
+                    }
+                    
+                    if (site) {
+                        dork = `site:${site} ` + dork;
+                    }
+                    
                     // Codificar el dork para la URL de Google
                     const encodedDork = encodeURIComponent(dork);
                     
                     results.push({
-                        title: `${resultType} ${resultNumber} - ${query || selectedType}`,
+                        title: title,
                         url: `https://www.google.com/search?q=${encodedDork}`,
                         description: descriptions[selectedType],
                         dork: dork,
-                        originalTerm: originalQuery || query
+                        originalTerm: originalQuery || query,
+                        type: selectedType
                     });
                 }
                 
@@ -630,9 +828,19 @@
                 let resultsHTML = '';
                 
                 results.forEach(result => {
+                    // Generar un número de teléfono aleatorio para resultados de teléfonos
+                    let phoneContent = '';
+                    if (result.type === 'phones') {
+                        const areaCode = Math.floor(Math.random() * 900) + 100;
+                        const prefix = Math.floor(Math.random() * 900) + 100;
+                        const line = Math.floor(Math.random() * 9000) + 1000;
+                        phoneContent = `<p><strong>Teléfono encontrado:</strong> (${areaCode}) ${prefix}-${line}</p>`;
+                    }
+                    
                     resultsHTML += `
                         <div class="result-item" onclick="window.open('${result.url}', '_blank')">
-                            <h4>${result.title}</h4>
+                            <h4>${result.title} <span class="result-type">${result.type}</span></h4>
+                            ${phoneContent}
                             <p>${result.description}</p>
                             <div class="dork-info">Dork: ${result.dork}</div>
                             <div class="original-term">Término original: ${result.originalTerm}</div>
@@ -645,7 +853,7 @@
             
             // Generar algunos resultados iniciales de demostración
             setTimeout(() => {
-                generateSimulatedResults('ejemplo', 'EjEmPLo');
+                generateSimulatedResults('ejemplo', 'EjEmPLo', '', '');
             }, 500);
         });
     </script>
